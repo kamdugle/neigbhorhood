@@ -6,11 +6,17 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<div data-bind= "foreach: places">
-			<h1 data-bind="text: $data">
-			</h1>
+		<div id="left">
+			<div id="placeBox" data-bind= "foreach: places">
+				<h1 data-bind="text: $data">
+				</h1>
+			</div>
+			<div id="API2"></div>
 		</div>
-		<div id="map">
+		<div id="API3"></div>
+
+		<div id="right">
+			<div id="map"><div>
 		</div>
 
 		<script src="bower_components/jquery/dist/jquery.min.js"></script>
