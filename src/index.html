@@ -6,12 +6,19 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
+		<div id="top"></div>
 		<div id="left">
-			<div id="placeBox" data-bind= "foreach: places">
-				<h1 data-bind="text: $data">
-				</h1>
+			<div id="placeBox">
+				<h1>Neighborhood</h1>
+				<input data-bind="value: newItem"></input>
+				<button data-bind="click: addPlace">Add</button>
+				<div data-bind= "foreach: places">
+					<h2 data-bind="text: $data">
+					</h2>
+				</div>
 			</div>
-			<div id="API2"></div>
+			<div id="API2">
+			</div>
 		</div>
 		<div id="API3"></div>
 

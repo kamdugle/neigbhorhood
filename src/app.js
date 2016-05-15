@@ -1,6 +1,13 @@
 var ViewModel = function() {
 	self = this;
 	self.places = ko.observableArray(["New York", "Atlanta"]);
+	self.newItem = ko.observable();
+
+
+	//Methods
+	self.addPlace = function(text) {
+		self.places.push(self.newItem());
+	};
 }
 
 myViewModel = new ViewModel();
