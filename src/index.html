@@ -19,16 +19,34 @@
 				<div>
 					<label>State</label><input data-bind="value: state"></input>
 				</div>
-				<button data-bind="click: changeNeighborhood">Update</button>
-				<div data-bind= "foreach: places">
-					<h2 data-bind="text: name">
-					</h2>
+				<div>
+					<button data-bind="click: changeNeighborhood">Update Neigbhorhood</button>
+				</div>
+				<div>
+
+					<div>
+						<label>Place Search</label><input data-bind="value: placeQuery"></input>
+					</div>
+
+					<div>
+						<button data-bind="click: searchPlace">Search</button>
+					</div>
+
+					<div>
+						<select data-bind="options: placeResults, optionsText: 'name', selectedOptions: selectedPlaces" size="10" multiple="true"></select>
+					</div>
+
 				</div>
 			</div>
 			<div id="API2">
 			</div>
 		</div>
-		<div id="API3"></div>
+
+		<div id="API3">
+			<select data-bind="options: places, optionsText: 'name', selectedOptions: selectedPlaces" size="10" multiple="true"></select>
+			<button data-bind="click: removePlaces">Remove</button>
+			<button data-bind="click: viewPlace">View</button>
+		</div>
 
 		<div id="right">
 			<div id="map"><div>

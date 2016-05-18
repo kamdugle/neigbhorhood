@@ -7,6 +7,12 @@ var ViewModel = function() {
 	self.city = ko.observable("Denver");
 	self.state = ko.observable("Colorado");
 	self.currentNeighborhood = ko.observable("Neighborhood, City, State");
+	self.currentLatLng = ko.observable();
+
+	self.placeQuery = ko.observable();
+	self.placeResults = ko.observableArray();
+
+	self.selectedPlaces = ko.observableArray();
 
 	//logic for google markers
 	self.markers = {};
@@ -37,7 +43,6 @@ var ViewModel = function() {
 				var position = alteration.value.geometry.location;
 				var id = String(position.lat()) + String(position.lng());
 				var marker = self.markers[id];
-				console.log("ID:" + id + "Markers: " + self.markers);
 				marker.setMap(null);
 				delete self.markers[id];
 
@@ -63,7 +68,8 @@ var ViewModel = function() {
 		    geocoder.geocode({"address": address}, function(results, status) {
 		    	if (status == google.maps.GeocoderStatus.OK) {
 		    		coords = results[0].geometry.location;
-		    		console.log(coords.lat() +", " + coords.lng());
+		    		self.currentLatLng(coords);
+
 		    		map.setCenter(results[0].geometry.location);
 
 		    		//Performs a place search
@@ -79,14 +85,9 @@ var ViewModel = function() {
 		    		service.nearbySearch(request, function(data) {
 		    			while (self.places().length < 6) {
 		    				var length = self.places().length;
-		    				console.log(length);
-
 		    				var found = false;
-
 		    				var requestLength = data.length;
 		    				var randomPlace = data[Math.floor(Math.random()*requestLength)];
-		    				console.log(randomPlace);
-
 
 		    				for (var i=0; i<length; i++) {
 		    					if (randomPlace === self.places()[i]) {
@@ -108,6 +109,37 @@ var ViewModel = function() {
 
 		geocode();
 
+	};
+
+	self.removePlaces = function() {
+		var arr = self.selectedPlaces();
+		iterLength = arr.length;
+
+		for (var i = 0; i < iterLength; i++) {
+			self.places.remove(arr[i]);
+		}
+	};
+
+	self.viewPlace = function() {
+		console.log(self.selectedPlaces()[0]);
+	}
+
+	self.searchPlace = function() {
+		var query = self.placeQuery();
+
+		var request = {
+		   location: self.currentLatLng(),
+		   radius: '1000',
+		   query: query
+		 };
+
+		 console.log(request);
+
+		service = new google.maps.places.PlacesService(map);
+		service.textSearch(request, function(data) {
+			console.log(data);
+			self.placeResults(data);
+		});
 	};
 }
 
