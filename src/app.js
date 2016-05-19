@@ -30,8 +30,8 @@ var ViewModel = function() {
 			var alteration = changes[i];
 			if (alteration.status === "added") {
 				//logic for additions
-				var position = alteration.value.geometry.location;
-				var id = String(position.lat()) + String(position.lng());
+				var position = alteration.value.location;
+				var id = String(position.lat) + String(position.lng);
 				var marker = new google.maps.Marker({
 					position: position,
 					map: map
@@ -41,8 +41,8 @@ var ViewModel = function() {
 
 			} else {
 				//logic for deletions
-				var position = alteration.value.geometry.location;
-				var id = String(position.lat()) + String(position.lng());
+				var position = alteration.value.location;
+				var id = String(position.lat) + String(position.lng);
 				var marker = self.markers[id];
 				marker.setMap(null);
 				delete self.markers[id];
@@ -54,12 +54,60 @@ var ViewModel = function() {
 	self.places.subscribe(updateMarkers, null, "arrayChange");
 
 	//Methods
+	self.searchNeighborhood = function(number) {
+
+		var processResults = function(data) {
+
+			var results = data.response.groups[0].items;
+			console.log(results);
+			
+			var iterLength = results.length;
+
+			for (var i=0; i < iterLength; i++) {
+
+				possiblePlace = results[i].venue;
+
+				var length = self.places().length;
+				var found = false;
+
+				console.log(possiblePlace);
+				self.placeResults.push(possiblePlace);
+				}
+
+			};
+
+		var address = self.currentNeighborhood();
+
+		var client_id = "EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE";
+		var client_secret = "TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW";
+		var version = "20160518";
+		var section = "topPicks";
+		var radius = 800;
+		var limit = number;
+		var url = "https://api.foursquare.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&near="+ address + "&section=" + section + "&radius=" + radius + "&limit=" + limit;
+
+		var request = {
+			"url": url,
+			"dataType": "json",
+			"success": processResults
+			};
+
+		$.get(request);
+
+		};
+
+
+
+
 	self.changeNeighborhood = function() {
-		//puts together the address to represent the neighborhood
-		var address = self.neighborhood() + ", " + self.city() + ", " + self.state()
 
 		//Saves the neighborhood name to currentNeighborhood Observable
+		var address = self.neighborhood() + ", " + self.city() + ", " + self.state();
 		self.currentNeighborhood(address);
+
+		self.places([]);
+		//Calls a search on new neighborhood
+		self.searchNeighborhood(100);
 
 		//Updates the map to focus on this neigbhorhood
 		var geocoder;
@@ -73,7 +121,7 @@ var ViewModel = function() {
 
 		    		map.setCenter(results[0].geometry.location);
 
-		    		//Performs a place search
+		    		/*
 		    		service = new google.maps.places.PlacesService(map);
 		    		var request = {
 		    			location: coords,
@@ -101,6 +149,7 @@ var ViewModel = function() {
 		    				}
 		    			}
 		    			});
+*/
 
 		    	}  else {
 		    		alert("Geocode was not successful for the following reason: " + status);
@@ -109,7 +158,6 @@ var ViewModel = function() {
 		};
 
 		geocode();
-
 	};
 
 	self.removePlaces = function() {
@@ -165,6 +213,7 @@ var ViewModel = function() {
 
 			if (!found) {
 				self.places.push(newPlace);
+				self.placeResults.remove(newPlace);
 			}
 		}
 	};
