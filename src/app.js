@@ -12,15 +12,26 @@ var ViewModel = function() {
 	self.placeQuery = ko.observable();
 	self.placeResults = ko.observableArray();
 	self.selectedResults = ko.observableArray();
+	self.selectedSavedPlaces = ko.observableArray();
 
-	self.selectedPlaces = ko.observableArray();
+	self.currentView = ko.observable();
+
+	self.formattedAddress = ko.computed(function() {
+		if (self.currentView()) {
+			var address = self.currentView().location.formattedAddress;
+			var formattedAddress = "";
+			for (var i=0; i < address.length; i++) {
+				formattedAddress+=address[i];
+				formattedAddress+="<br>";
+			}
+			return formattedAddress;
+		}
+	});
+
 
 	//logic for google markers
 	self.markers = {};
 	self.currentId = 0;
-	self.uniqueId = function() {
-		return self.currentId++;
-	}
 
 
 	//Subscribe places to update google map with markers
@@ -59,7 +70,6 @@ var ViewModel = function() {
 		var processResults = function(data) {
 
 			var results = data.response.groups[0].items;
-			console.log(results);
 			
 			var iterLength = results.length;
 
@@ -70,7 +80,6 @@ var ViewModel = function() {
 				var length = self.places().length;
 				var found = false;
 
-				console.log(possiblePlace);
 				self.placeResults.push(possiblePlace);
 				}
 
@@ -161,7 +170,7 @@ var ViewModel = function() {
 	};
 
 	self.removePlaces = function() {
-		var arr = self.selectedPlaces();
+		var arr = self.selectedSavedPlaces();
 		iterLength = arr.length;
 
 		for (var i = 0; i < iterLength; i++) {
@@ -169,9 +178,56 @@ var ViewModel = function() {
 		}
 	};
 
-	self.viewPlace = function() {
-		console.log(self.selectedPlaces()[0]);
-	}
+	self.viewPlace = function(_, target) {
+		var place;
+		console.log(target);
+		switch (target.currentTarget.id) {
+
+			case "results": 
+			place = self.selectedResults()[0];
+			break;
+
+			case "savedPlaces":
+			place = self.selectedSavedPlaces()[0];
+			break;
+		}
+		console.log(place);
+
+		//remove any existing selected marker
+		if (self.markers["selected"]) {
+			self.markers["selected"].setMap(null);
+			var id = self.markers["selected"]["id"];
+			console.log(id);
+			console.log(self.markers);
+
+			if (self.markers[id]) {
+				self.markers[id].setMap(map);
+			}
+
+			self.markers["selected"] = null;
+
+		}
+
+		//add new selected marker
+		console.log(place);
+		var position = place.location;
+		var id = String(position.lat) + String(position.lng);
+		var marker = new google.maps.Marker({
+				position: position,
+				map: map,
+				id: id
+			});
+		marker.setIcon('img/icon39.png')
+		self.markers["selected"] = marker;
+
+		if (self.markers[id]) {
+			self.markers[id].setMap(null);
+		}
+
+		//update current view
+		self.currentView(place);
+
+	};
 
 	self.searchPlace = function() {
 		var query = self.placeQuery();
@@ -182,11 +238,8 @@ var ViewModel = function() {
 		   query: query
 		 };
 
-		 console.log(request);
-
 		service = new google.maps.places.PlacesService(map);
 		service.textSearch(request, function(data) {
-			console.log(data);
 			self.placeResults(data);
 		});
 	};
@@ -206,7 +259,6 @@ var ViewModel = function() {
 			//checks for duplicates against place array
 			for (var i = 0; i < placeLength; i++) {
 				if (newPlace === places[i]) {
-					console.log("true!")
 					found = true;
 				}
 			}
