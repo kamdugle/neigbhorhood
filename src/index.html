@@ -33,7 +33,11 @@
 					</div>
 
 					<div>
-						<select data-bind="options: placeResults, optionsText: 'name', selectedOptions: selectedPlaces" size="10" multiple="true"></select>
+						<select data-bind="options: placeResults, optionsText: 'name', selectedOptions: selectedResults" size="10" multiple="true"></select>
+					</div>
+
+					<div>
+						<button data-bind="click: addPlaces">Save Place</button>
 					</div>
 
 				</div>

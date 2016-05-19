@@ -11,6 +11,7 @@ var ViewModel = function() {
 
 	self.placeQuery = ko.observable();
 	self.placeResults = ko.observableArray();
+	self.selectedResults = ko.observableArray();
 
 	self.selectedPlaces = ko.observableArray();
 
@@ -140,6 +141,32 @@ var ViewModel = function() {
 			console.log(data);
 			self.placeResults(data);
 		});
+	};
+
+	self.addPlaces = function() {
+		var results = self.selectedResults();
+		var iterLength = results.length;
+
+		//iterates through search results
+		for (var i = 0; i < iterLength; i++) {
+
+			var newPlace = results[i];
+			var found = false;
+			var places = self.places();
+			var placeLength = places.length;
+
+			//checks for duplicates against place array
+			for (var i = 0; i < placeLength; i++) {
+				if (newPlace === places[i]) {
+					console.log("true!")
+					found = true;
+				}
+			}
+
+			if (!found) {
+				self.places.push(newPlace);
+			}
+		}
 	};
 }
 
