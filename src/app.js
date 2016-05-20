@@ -2,6 +2,8 @@
 var ViewModel = function() {
 	self = this;
 	self.places = ko.observableArray();
+	self.displayedPlaces = ko.observableArray();
+
 	self.newItem = ko.observable();
 	self.neighborhood = ko.observable("Five Points");
 	self.city = ko.observable("Denver");
@@ -12,7 +14,12 @@ var ViewModel = function() {
 	self.placeQuery = ko.observable();
 	self.placeResults = ko.observableArray();
 	self.selectedResults = ko.observableArray();
+
 	self.selectedSavedPlaces = ko.observableArray();
+	
+	self.filterQuery = ko.observable();
+	self.filteredSavedPlaces = ko.observableArray();
+
 
 	self.currentView = ko.observable();
 
@@ -217,8 +224,11 @@ var ViewModel = function() {
 				map: map,
 				id: id
 			});
-		marker.setIcon('img/icon39.png')
+		marker.setIcon('img/icon39.png');
+		marker.setZIndex(9999);
+		map.setCenter(position);
 		self.markers["selected"] = marker;
+
 
 		if (self.markers[id]) {
 			self.markers[id].setMap(null);
@@ -269,6 +279,10 @@ var ViewModel = function() {
 			}
 		}
 	};
+
+	self.filterSavedPlaces = function() {
+
+	}
 }
 
 myViewModel = new ViewModel();

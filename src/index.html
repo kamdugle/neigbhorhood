@@ -11,13 +11,13 @@
 			<div id="placeBox">
 				<h1 data-bind="text: currentNeighborhood">Neighborhood</h1>
 				<div>
-					<label>Neighorhood</label><input data-bind="value: neighborhood"></input>
+					<input data-bind="value: neighborhood"></input><label>Neighorhood</label>
 				</div>
 				<div>
-					<label>City</label><input data-bind="value: city"></input>
+					<input data-bind="value: city"></input><label>City</label>
 				</div>
 				<div>
-					<label>State</label><input data-bind="value: state"></input>
+					<input data-bind="value: state"></input><label>State</label>
 				</div>
 				<div>
 					<button data-bind="click: changeNeighborhood">Update Neighborhood</button>
@@ -25,7 +25,7 @@
 				<div>
 
 					<div>
-						<label>Place Search</label><input data-bind="value: placeQuery"></input>
+						<input data-bind="value: placeQuery"></input><label>Place Search</label>
 					</div>
 
 					<div>
@@ -55,6 +55,7 @@
 		</div>
 
 		<div id="API3">
+			<input data-bind="value: filterQuery"></input><button data-bind="click: filterSavedPlaces"></button>
 			<select data-bind="options: places, optionsText: 'name', selectedOptions: selectedSavedPlaces" size="10" multiple="true"></select>
 			<button data-bind="click: removePlaces">Remove</button>
 			<button id="savedPlaces" data-bind="click: viewPlace">View</button>
