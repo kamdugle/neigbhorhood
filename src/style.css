@@ -36,12 +36,21 @@ html, body { height: 100%; margin: 0; padding: 0; }
 	width: 50%;
 }
 
-#API3 {
+#topRight {
 	background-color: green;
 	display: inline-block;
 	height: 50%;
 	width: 500px;
 
+}
+
+#filterBox {
+	display: block;
+	float:left;
+}
+
+#button {
+	display: block;
 }
 
 #map {

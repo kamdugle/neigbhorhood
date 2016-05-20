@@ -54,11 +54,19 @@
 			</div>
 		</div>
 
-		<div id="API3">
-			<input data-bind="value: filterQuery"></input><button data-bind="click: filterSavedPlaces"></button>
-			<select data-bind="options: places, optionsText: 'name', selectedOptions: selectedSavedPlaces" size="10" multiple="true"></select>
-			<button data-bind="click: removePlaces">Remove</button>
-			<button id="savedPlaces" data-bind="click: viewPlace">View</button>
+		<div id="topRight">
+			<div id="filterBox">
+				<div>
+					<input data-bind="value: filterQuery"> </input><button data-bind="click: updateFilter">Filter</button>
+				</div>
+				<div>
+					<select data-bind="options: displayedPlaces, optionsText: 'name', selectedOptions: selectedSavedPlaces" size="10" multiple="true"></select>
+					<div>
+						<button data-bind="click: removePlaces">Remove</button>
+						<button id="savedPlaces" data-bind="click: viewPlace">View</button>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<div id="right">

@@ -1,7 +1,11 @@
 
+RegExp.escape = function(s) {
+    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+
 var ViewModel = function() {
 	self = this;
-	self.places = ko.observableArray();
+	self.savedPlaces = ko.observableArray();
 	self.displayedPlaces = ko.observableArray();
 
 	self.newItem = ko.observable();
@@ -41,10 +45,10 @@ var ViewModel = function() {
 	self.currentId = 0;
 
 
-	//Subscribe places to update google map with markers
-	function updateMarkers(changes) {
-		var length = changes.length;
-		for (var i=0; i<length; i++) {
+	//Subscribe displayedPlaces to update google map with markers
+	self.updateMarkers = function (changes) {
+		var iterLength = changes.length;
+		for (var i=0; i<iterLength; i++) {
 			var alteration = changes[i];
 			if (alteration.status === "added") {
 				//logic for additions
@@ -62,14 +66,90 @@ var ViewModel = function() {
 				var position = alteration.value.location;
 				var id = String(position.lat) + String(position.lng);
 				var marker = self.markers[id];
+
+				if (self.markers["selected"] && self.markers["selected"]["id"]===id) {
+					self.markers["selected"].setMap(null);
+				}
+
 				marker.setMap(null);
 				delete self.markers[id];
 
 			}
 		}
 	}
+	self.displayedPlaces.subscribe(self.updateMarkers, null, "arrayChange");
 
-	self.places.subscribe(updateMarkers, null, "arrayChange");
+	//Subscribes savedPlaces to update displayedPlaces per filter 
+
+	self.updateDisplayedPlaces = function(changes) {
+
+		filterQuery = self.filterQuery();
+
+			var iterLength = changes.length;
+
+			for (var i=0; i<iterLength; i++) {
+				var alteration = changes[i];
+				var place = alteration.value;
+				if (alteration.status === "added") {
+					//logic for additions
+					if (filterQuery === undefined || filterQuery === "") {
+						self.displayedPlaces.push(place);
+					} else {
+						var regExpFilter = new RegExp(RegExp.escape(filterQuery)+" *", "i");
+
+						console.log(regExpFilter);
+
+
+						var found = regExpFilter.test(place.name);
+						if (found) {
+							self.displayedPlaces.push(place);
+						}
+					}
+					
+				} else {
+					//logic for deletions
+					if (place === self.currentView()) {
+						self.currentView(null);
+					}
+					if (filterQuery === undefined || filterQuery === "") {
+						self.displayedPlaces.remove(place);
+					} else {
+						var alteration = changes[i];
+						var displayedPlaces = self.displayedPlaces();
+						if (displayedPlaces.indexOf(place) !== -1) {
+							self.displayedPlaces.remove(place);
+						}
+					}
+					
+				}
+			}
+		} 
+	self.savedPlaces.subscribe(self.updateDisplayedPlaces, null, "arrayChange");
+	//subscription to update displayedPlaces by iterating through savedPlaces when filterQuery changes
+	self.updateFilter = function(change) {
+		var filterQuery = change;
+
+		if (filterQuery === undefined || filterQuery ==="") {
+			self.displayedPlaces(self.savedPlaces());
+		} else {
+			self.displayedPlaces([]);
+			var savedPlaces = self.savedPlaces();
+			var iterLength = savedPlaces.length;
+			var regExpFilter = new RegExp(RegExp.escape(filterQuery)+" *", "i");
+
+			for (var i=0; i<iterLength; i++) {
+				var place = savedPlaces[i]
+				var found = regExpFilter.test(place.name);
+				console.log ("filter:" + regExpFilter + "place: " + place.name +  "found?" + found);
+				if (found) {
+					self.displayedPlaces.push(place);
+				}
+			}
+		}
+	}
+	self.filterQuery.subscribe(self.updateFilter, null);
+
+	
 
 	//Methods
 	self.searchNeighborhood = function(number) {
@@ -84,7 +164,7 @@ var ViewModel = function() {
 
 				possiblePlace = results[i].venue;
 
-				var length = self.places().length;
+				var length = self.savedPlaces().length;
 				var found = false;
 
 				self.placeResults.push(possiblePlace);
@@ -121,7 +201,7 @@ var ViewModel = function() {
 		var address = self.neighborhood() + ", " + self.city() + ", " + self.state();
 		self.currentNeighborhood(address);
 
-		self.places([]);
+		self.savedPlaces([]);
 		//Calls a search on new neighborhood
 		self.searchNeighborhood(100);
 
@@ -181,13 +261,12 @@ var ViewModel = function() {
 		iterLength = arr.length;
 
 		for (var i = 0; i < iterLength; i++) {
-			self.places.remove(arr[i]);
+			self.savedPlaces.remove(arr[i]);
 		}
 	};
 
 	self.viewPlace = function(_, target) {
 		var place;
-		console.log(target);
 		switch (target.currentTarget.id) {
 
 			case "results": 
@@ -198,7 +277,6 @@ var ViewModel = function() {
 			place = self.selectedSavedPlaces()[0];
 			break;
 		}
-		console.log(place);
 
 		//remove any existing selected marker
 		if (self.markers["selected"]) {
@@ -263,7 +341,7 @@ var ViewModel = function() {
 
 			var newPlace = results[i];
 			var found = false;
-			var places = self.places();
+			var places = self.savedPlaces();
 			var placeLength = places.length;
 
 			//checks for duplicates against place array
@@ -274,7 +352,7 @@ var ViewModel = function() {
 			}
 
 			if (!found) {
-				self.places.push(newPlace);
+				self.savedPlaces.push(newPlace);
 				self.placeResults.remove(newPlace);
 			}
 		}
