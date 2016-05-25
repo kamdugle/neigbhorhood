@@ -164,13 +164,33 @@ var ViewModel = function() {
 
 				possiblePlace = results[i].venue;
 
+				console.log(possiblePlace);
+
 				var length = self.savedPlaces().length;
-				var found = false;
 
 				self.placeResults.push(possiblePlace);
+
+				var createAjaxRequest = function (possiblePlace) {
+
+					return function() {
+						var tipRequest = {
+							"url": "https://api.foursquare.com/v2/venues/" + possiblePlace.id + "/tips?client_id=EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE&client_secret=TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW&v=20160518&sort=popular&limit=3" ,
+							"dataType": "json",  
+							"success": function(data) {
+								possiblePlace["tips"] = data.response.tips.items.slice(0,3);
+							}
+						};
+						$.get(tipRequest);
+					}
 				}
 
-			};
+				var ajaxRequest = createAjaxRequest(possiblePlace);
+				ajaxRequest();
+
+			}
+
+			console.log("results:" + self.placeResults());
+		};
 
 		var address = self.currentNeighborhood();
 
@@ -191,9 +211,6 @@ var ViewModel = function() {
 		$.get(request);
 
 		};
-
-
-
 
 	self.changeNeighborhood = function() {
 

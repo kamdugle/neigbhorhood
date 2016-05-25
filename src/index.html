@@ -46,8 +46,11 @@
 			<div id="API2">
 				<div data-bind="with: currentView">
 					<h2 data-bind="text: name"></h2>
+					<h3><a data-bind="attr: { href: url}, text: url"></a></h3>
 					<h3 data-bind="html: $root.formattedAddress"></h3>
-
+					<div data-bind="foreach: tips">
+						<p data-bind="text: text"></p>
+					</div>
 				</div>
 
 
