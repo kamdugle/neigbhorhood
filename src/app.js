@@ -56,7 +56,8 @@ var ViewModel = function() {
 				var id = String(position.lat) + String(position.lng);
 				var marker = new google.maps.Marker({
 					position: position,
-					map: map
+					map: map,
+					animation: google.maps.Animation.DROP
 				});
 				self.markers[id] = marker;
 
@@ -317,7 +318,8 @@ var ViewModel = function() {
 		var marker = new google.maps.Marker({
 				position: position,
 				map: map,
-				id: id
+				id: id,
+				animation: google.maps.Animation.DROP
 			});
 		marker.setIcon('img/icon39.png');
 		marker.setZIndex(9999);
