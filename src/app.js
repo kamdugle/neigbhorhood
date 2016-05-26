@@ -381,7 +381,7 @@ var ViewModel = function(savedData) {
 
 	self.saveModel = function() {
 		var savedData = ko.toJSON(self);
-		firebase.database().ref('users/' + 1).set(savedData);
+		firebase.database().set(savedData);
 	}
 };
 
