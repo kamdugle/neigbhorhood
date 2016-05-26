@@ -10,15 +10,20 @@ var map;
 var initMap;
 
 reqListener = function () {
-  console.log(this.responseText);
   savedData = JSON.parse(this.responseText);
-  console.log(savedData);
 
   myViewModel = new ViewModel(savedData);
   ko.applyBindings(myViewModel);
 
   myViewModel.displayedPlaces(savedData.savedPlaces);
+};
 
+function onGoogleMapLoad () {
+	initMap();
+	var oReq = new XMLHttpRequest();
+	oReq.addEventListener("load", reqListener);
+	oReq.open("GET", "savedData.json");
+	oReq.send();
 };
 
 function initMap () {
@@ -30,10 +35,6 @@ function initMap () {
   	  		});
   } 
 
-var oReq = new XMLHttpRequest();
-oReq.addEventListener("load", reqListener);
-oReq.open("GET", "savedData.json");
-oReq.send();
 
 //Viewmodel
 
@@ -133,9 +134,6 @@ var ViewModel = function(savedData) {
 					} else {
 						var regExpFilter = new RegExp(RegExp.escape(filterQuery)+" *", "i");
 
-						console.log(regExpFilter);
-
-
 						var found = regExpFilter.test(place.name);
 						if (found) {
 							self.displayedPlaces.push(place);
@@ -177,7 +175,6 @@ var ViewModel = function(savedData) {
 			for (var i=0; i<iterLength; i++) {
 				var place = savedPlaces[i]
 				var found = regExpFilter.test(place.name);
-				console.log ("filter:" + regExpFilter + "place: " + place.name +  "found?" + found);
 				if (found) {
 					self.displayedPlaces.push(place);
 				}
@@ -200,8 +197,6 @@ var ViewModel = function(savedData) {
 			for (var i=0; i < iterLength; i++) {
 
 				possiblePlace = results[i].venue;
-
-				console.log(possiblePlace);
 
 				var length = self.savedPlaces().length;
 
@@ -226,7 +221,6 @@ var ViewModel = function(savedData) {
 
 			}
 
-			console.log("results:" + self.placeResults());
 		};
 
 		var address = self.currentNeighborhood();
@@ -307,8 +301,6 @@ var ViewModel = function(savedData) {
 		if (self.markers["selected"]) {
 			self.markers["selected"].setMap(null);
 			var id = self.markers["selected"]["id"];
-			console.log(id);
-			console.log(self.markers);
 
 			if (self.markers[id]) {
 				self.markers[id].setMap(map);
@@ -319,7 +311,6 @@ var ViewModel = function(savedData) {
 		}
 
 		//add new selected marker
-		console.log(place);
 		var position = place.location;
 		var id = String(position.lat) + String(position.lng);
 		var marker = new google.maps.Marker({
@@ -388,7 +379,10 @@ var ViewModel = function(savedData) {
 
 	}
 
-
+	self.saveModel = function() {
+		var savedData = ko.toJSON(self);
+		firebase.database().ref('users/' + 1).set(savedData);
+	}
 };
 
 
