@@ -1,0 +1,65 @@
+@charset "UTF-8"
+
+@import url("../bower_components/normalize-css/normalize.css");
+
+
+html, body { height: 100%; margin: 0; padding: 0; }
+
+#top {
+	width: 100%;
+	height: 100px;
+	background-color: yellow;
+}
+
+#left {
+	float: left;
+	width: 600px;
+	height: 100%;
+	display: inline-block;
+}
+
+#right {
+	float: left;
+	display: inline-block;
+	width: 400px;
+	height: 100%;
+}
+
+#placeBox {
+	float: left;
+	background-color: red;
+	display: inline-block;
+	min-height: 100%;
+	width: 50%
+}
+
+#API2 {
+	float: right;
+	background-color: blue;
+	display: inline-block;
+	height: 100%;
+	width: 50%;
+}
+
+#topRight {
+	background-color: green;
+	display: inline-block;
+	height: 50%;
+	width: 500px;
+
+}
+
+#filterBox {
+	display: block;
+	float:left;
+}
+
+#button {
+	display: block;
+}
+
+#map {
+	display: inline-block;
+	height: 50%;
+	width: 500px;
+}
