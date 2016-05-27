@@ -382,7 +382,7 @@ var ViewModel = function(savedData) {
 	self.saveModel = function() {
 		var savedData = ko.toJSON(self);
 		Firebase.INTERNAL.forceWebSockets();
-		firebase.database().ref('users/' + 1).set(savedData);
+		firebase.database().ref('users/1').set(savedData);
 	}
 };
 
