@@ -7,10 +7,11 @@
 	</head>
 	<body>
 		<div class="top">
+			<h1>Neighborhood Explorer</h1>
 		</div>
 		<div class="main">
 			<div class="placeBox">
-				<h1 data-bind="text: currentNeighborhood">Neighborhood</h1>
+				<h2 data-bind="text: currentNeighborhood">Neighborhood</h1>
 				<div>
 					<input data-bind="value: neighborhood"></input><label>Neighorhood</label>
 				</div>
@@ -44,6 +45,7 @@
 			<div id="map">
 			</div>
 			<div class="filterBox">
+				<h2>Saved Places</h2>
 				<div>
 					<input data-bind="value: filterQuery"> </input><button data-bind="click: updateFilter">Filter</button>
 				</div>
@@ -57,7 +59,7 @@
 			</div>
 			<div class="viewBox">
 				<div data-bind="with: currentView">
-					<h2 data-bind="text: name"></h2>
+					<h2 data-bind="text: name">Current Place</h2>
 					<h3><a data-bind="attr: { href: url}, text: url"></a></h3>
 					<h3 data-bind="html: $root.formattedAddress"></h3>
 					<div data-bind="foreach: tips">

@@ -16,6 +16,7 @@ reqListener = function () {
   ko.applyBindings(myViewModel);
 
   myViewModel.displayedPlaces(savedData.savedPlaces);
+  myViewModel.viewPlace.call(this, null, null, savedData.currentView);
 };
 
 function onGoogleMapLoad () {
@@ -284,18 +285,28 @@ var ViewModel = function(savedData) {
 		}
 	};
 
-	self.viewPlace = function(_, target) {
+	self.viewPlace = function(_, target, initialPlace) {
+		console.log(target);
+		console.log(place);
 		var place;
-		switch (target.currentTarget.classList[0]) {
 
-			case "results": 
-			place = self.selectedResults()[0];
-			break;
+		if (initialPlace) {
+			console.log("initial Place: " + initialPlace);
+			place = initialPlace;
+		} else {
+			if (target) {
+				switch (target.currentTarget.classList[0]) {
 
-			case "savedPlaces":
-			place = self.selectedSavedPlaces()[0];
-			console.log(place);
-			break;
+					case "results": 
+					place = self.selectedResults()[0];
+					break;
+
+					case "savedPlaces":
+					place = self.selectedSavedPlaces()[0];
+					console.log(place);
+					break;
+				}
+			}
 		}
 
 		//remove any existing selected marker
