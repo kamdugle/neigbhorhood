@@ -286,7 +286,7 @@ var ViewModel = function(savedData) {
 
 	self.viewPlace = function(_, target) {
 		var place;
-		switch (target.currentTarget.id) {
+		switch (target.currentTarget.classList[0]) {
 
 			case "results": 
 			place = self.selectedResults()[0];
@@ -294,6 +294,7 @@ var ViewModel = function(savedData) {
 
 			case "savedPlaces":
 			place = self.selectedSavedPlaces()[0];
+			console.log(place);
 			break;
 		}
 
@@ -374,16 +375,6 @@ var ViewModel = function(savedData) {
 			}
 		}
 	};
-
-	self.filterSavedPlaces = function() {
-
-	}
-
-	self.saveModel = function() {
-		var savedData = ko.toJSON(self);
-		Firebase.INTERNAL.forceWebSockets();
-		firebase.database().ref('users/1').set(savedData);
-	}
 };
 
 

@@ -6,9 +6,9 @@
 		<link rel="stylesheet" href="styles/app.css">
 	</head>
 	<body>
-		<div id="top"></div>
-		<div id="left">
-			<div id="placeBox">
+		<div class="top"></div>
+		<div class="left">
+			<div class="placeBox">
 				<h1 data-bind="text: currentNeighborhood">Neighborhood</h1>
 				<div>
 					<input data-bind="value: neighborhood"></input><label>Neighorhood</label>
@@ -38,12 +38,12 @@
 
 					<div>
 						<button data-bind="click: addPlaces">Save Place</button>
-						<button id="results" data-bind="click: viewPlace">View</button>
+						<button class="results" data-bind="click: viewPlace">View</button>
 					</div>
 
 				</div>
 			</div>
-			<div id="API2">
+			<div class="API2">
 				<div data-bind="with: currentView">
 					<h2 data-bind="text: name"></h2>
 					<h3><a data-bind="attr: { href: url}, text: url"></a></h3>
@@ -57,8 +57,8 @@
 			</div>
 		</div>
 
-		<div id="topRight">
-			<div id="filterBox">
+		<div class="topRight">
+			<div class="filterBox">
 				<div>
 					<input data-bind="value: filterQuery"> </input><button data-bind="click: updateFilter">Filter</button>
 				</div>
@@ -66,14 +66,13 @@
 					<select data-bind="options: displayedPlaces, optionsText: 'name', selectedOptions: selectedSavedPlaces" size="10" multiple="true"></select>
 					<div>
 						<button data-bind="click: removePlaces">Remove</button>
-						<button id="savedPlaces" data-bind="click: viewPlace">View</button>
-						<button data-bind="click: saveModel">Save Data</button>
+						<button class="savedPlaces" data-bind="click: viewPlace">View</button>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div id="right">
+		<div class="right">
 			<div id="map"><div>
 		</div>
 
@@ -81,17 +80,5 @@
 		<script src="bower_components/knockout/dist/knockout.debug.js"></script>
 		<script src="app.js"></script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFop0bJ_MZ5R0_QzmA1srR1KPdvu9EBaQ&libraries=places&callback=onGoogleMapLoad" defer></script>
-
-		<script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
-		<script>
-		  // Initialize Firebase
-		  var config = {
-		    apiKey: "AIzaSyBFL_UsCXOc37N3fizBA_tjLcOWtG3qvLU",
-		    databaseURL: "https://neighborhood-32453.firebaseio.com",
-		    storageBucket: "",
-		  };
-		  firebase.initializeApp(config);
-		</script>
-		    
 	</body>
 </html>
