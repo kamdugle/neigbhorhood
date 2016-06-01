@@ -187,7 +187,7 @@ var ViewModel = function(savedData) {
 	
 
 	//Methods
-	self.searchNeighborhood = function(number) {
+	self.searchNeighborhood = function(number, query) {
 
 		var processResults = function(data) {
 
@@ -229,11 +229,19 @@ var ViewModel = function(savedData) {
 		var client_id = "EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE";
 		var client_secret = "TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW";
 		var version = "20160518";
-		var section = "topPicks";
 		var radius = 800;
 		var limit = number;
-		var url = "https://api.foursquare.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&near="+ address + "&section=" + section + "&radius=" + radius + "&limit=" + limit;
+		var url = "https://api.foursquare.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&near="+ address + "&radius=" + radius + "&limit=" + limit;
 
+		//Chooses between a query search or a TopPicks general search
+		if (query) {
+			url = url + "&query=" + query;
+		} else {
+			url = url + "&section=topPicks";
+		}
+
+		console.log(url);
+		
 		var request = {
 			"url": url,
 			"dataType": "json",
@@ -349,6 +357,8 @@ var ViewModel = function(savedData) {
 	self.searchPlace = function() {
 		var query = self.placeQuery();
 
+		/*
+
 		var request = {
 		   location: self.currentLatLng(),
 		   radius: '1000',
@@ -358,7 +368,10 @@ var ViewModel = function(savedData) {
 		service = new google.maps.places.PlacesService(map);
 		service.textSearch(request, function(data) {
 			self.placeResults(data);
-		});
+		}); */
+		
+		self.placeResults([]);
+		self.searchNeighborhood(100, query);
 	};
 
 	self.addPlaces = function() {
