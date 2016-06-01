@@ -1,14 +1,23 @@
 
 //Regular expression helper function to escape all special characters in a string
 RegExp.escape = function(s) {
-    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-};
+		return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+	};
+
+//Sets up Ajax Error Handling
+/*$( document ).ajaxError(
+	function(event, request, settings ) {
+		for (let i of settings) {
+			alert (i);
+		}
+	});
+*/
 
 //Import saved Data and initiate map
 var savedData;
 var map;
-var initMap;
 
+//Loads saved JSON after google map loads
 reqListener = function () {
   savedData = JSON.parse(this.responseText);
 
@@ -19,30 +28,30 @@ reqListener = function () {
   myViewModel.viewPlace.call(this, null, null, savedData.currentView);
 };
 
-function onGoogleMapLoad () {
-	initMap();
-	var oReq = new XMLHttpRequest();
-	oReq.addEventListener("load", reqListener);
-	oReq.open("GET", "savedData.json");
-	oReq.send();
-};
-
+//Initiates google map
 function initMap () {
-  	 map = new google.maps.Map(document.getElementById('map'), {
-  	  		  center: {lat: -34.397, lng: 150.644},
-  	  		  zoom: 13,
-  	  		  zoomControl: true,
-  	  		  scaleControl: true
-  	  		});
+	google.maps.event.addDomListener(window, "load", function() {
+		map = new google.maps.Map(document.getElementById('map'), {
+		 		  center: {lat: -34.397, lng: 150.644},
+		 		  zoom: 13,
+		 		  zoomControl: true,
+		 		  scaleControl: true
+		 		});
+		var oReq = new XMLHttpRequest();
+		oReq.addEventListener("load", reqListener);
+		oReq.open("GET", "savedData.json");
+		oReq.send();
+	});
   } 
 
-
-//Viewmodel
-
+//Sets up ViewModel constructor
 var ViewModel = function(savedData) {
+	//saves this environment as self
 	self = this;
+
+	//sets up observables
 	self.savedPlaces = ko.observableArray(savedData.savedPlaces);
-	self.displayedPlaces = ko.observableArray(/*savedData.savedPlaces*/);
+	self.displayedPlaces = ko.observableArray();
 
 	self.newItem = ko.observable();
 	self.neighborhood = ko.observable(savedData.neighborhood);
@@ -63,6 +72,7 @@ var ViewModel = function(savedData) {
 
 	self.currentView = ko.observable();
 
+	//Computed formatted address
 	self.formattedAddress = ko.computed(function() {
 		if (self.currentView()) {
 			var address = self.currentView().location.formattedAddress;
@@ -76,17 +86,18 @@ var ViewModel = function(savedData) {
 	});
 
 
-	//logic for google markers
+	//Object to keep track of google marks, and generate ids
 	self.markers = {};
-	self.currentId = 0;
 
+	//Subscription Methods
 
-	//Subscribe displayedPlaces to update google map with markers
+	//Method to update google map with markers, to be subscribed to displayedPlaces observable
 	self.updateMarkers = function (changes) {
 		var iterLength = changes.length;
 		for (var i=0; i<iterLength; i++) {
 			var alteration = changes[i];
 			if (alteration.status === "added") {
+
 				//logic for additions
 				var position = alteration.value.location;
 				var id = String(position.lat) + String(position.lng);
@@ -115,10 +126,10 @@ var ViewModel = function(savedData) {
 			}
 		}
 	}
+	//Subscribes displayedPlaces Observable to updateMarkers method
 	self.displayedPlaces.subscribe(self.updateMarkers, null, "arrayChange");
 
-	//Subscribes savedPlaces to update displayedPlaces per filter 
-
+	//Method to update displayedPlaces based on changes to savedPlaces, to be subscribed
 	self.updateDisplayedPlaces = function(changes) {
 
 		filterQuery = self.filterQuery();
@@ -158,12 +169,14 @@ var ViewModel = function(savedData) {
 					
 				}
 			}
-		} 
+		};
+
+	//Subscribes savedPlaces to update displayedPlaces per filter 
 	self.savedPlaces.subscribe(self.updateDisplayedPlaces, null, "arrayChange");
 
-	//subscription to update displayedPlaces by iterating through savedPlaces when filterQuery changes
-	self.updateFilter = function(change) {
-		var filterQuery = change;
+	//Method to update displayedPlaces by iterating through savedPlaces when filterQuery changes
+	self.updateFilter = function() {
+		var filterQuery = self.filterQuery();
 
 		if (filterQuery === undefined || filterQuery ==="") {
 			self.displayedPlaces(self.savedPlaces());
@@ -182,13 +195,17 @@ var ViewModel = function(savedData) {
 			}
 		}
 	}
+	//Subscribes updateFilter to changes in updateFilter;
 	self.filterQuery.subscribe(self.updateFilter, null);
 
 	
 
-	//Methods
+	//Viewmodel Methods
+
+	//Performs an Ajax neighborhood search
 	self.searchNeighborhood = function(number, query) {
 
+		//function to process results from FourSquare Ajax search, also performs its own Ajax request to add tips
 		var processResults = function(data) {
 
 			var results = data.response.groups[0].items;
@@ -203,7 +220,8 @@ var ViewModel = function(savedData) {
 
 				self.placeResults.push(possiblePlace);
 
-				var createAjaxRequest = function (possiblePlace) {
+				//generates AjaxRequest to search FourSquare tips
+				var createTipAjaxRequest = function (possiblePlace) {
 
 					return function() {
 						var tipRequest = {
@@ -212,21 +230,24 @@ var ViewModel = function(savedData) {
 							"success": function(data) {
 								possiblePlace["tips"] = data.response.tips.items.slice(0,3);
 							}
+							}
 						};
 						$.get(tipRequest);
 					}
 				}
 
-				var ajaxRequest = createAjaxRequest(possiblePlace);
-				ajaxRequest();
+				//creates tipAjaxRequest with closure for the current iterated place 
+				var tipAjaxRequest = createTipAjaxRequest(possiblePlace);
 
-			}
+				//calls tipAjaxRequest already created with closure
+				tipAjaxRequest();
 
-		};
+			};
 
+		//Logic for main FourSquare Request to get a list of places based on neighborhood
 		var address = self.currentNeighborhood();
 
-		var client_id = "EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE";
+		var client_id = "!!!EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE";
 		var client_secret = "TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW";
 		var version = "20160518";
 		var radius = 800;
@@ -239,18 +260,17 @@ var ViewModel = function(savedData) {
 		} else {
 			url = url + "&section=topPicks";
 		}
-
-		console.log(url);
 		
 		var request = {
 			"url": url,
 			"dataType": "json",
-			"success": processResults
+			"success": processResults,
+			"error": function (error) {
+				var errorMsg = JSON.parse(error.responseText).meta;
+				alert("Error " + error.status + ": " + error.statusText + "\n" + errorMsg.errorDetail);}
 			};
-
-		$.get(request);
-
-		};
+		$.ajax(request);
+	};
 
 	self.changeNeighborhood = function() {
 
@@ -294,12 +314,9 @@ var ViewModel = function(savedData) {
 	};
 
 	self.viewPlace = function(_, target, initialPlace) {
-		console.log(target);
-		console.log(place);
 		var place;
 
 		if (initialPlace) {
-			console.log("initial Place: " + initialPlace);
 			place = initialPlace;
 		} else {
 			if (target) {
@@ -311,7 +328,6 @@ var ViewModel = function(savedData) {
 
 					case "savedPlaces":
 					place = self.selectedSavedPlaces()[0];
-					console.log(place);
 					break;
 				}
 			}
@@ -356,19 +372,6 @@ var ViewModel = function(savedData) {
 
 	self.searchPlace = function() {
 		var query = self.placeQuery();
-
-		/*
-
-		var request = {
-		   location: self.currentLatLng(),
-		   radius: '1000',
-		   query: query
-		 };
-
-		service = new google.maps.places.PlacesService(map);
-		service.textSearch(request, function(data) {
-			self.placeResults(data);
-		}); */
 		
 		self.placeResults([]);
 		self.searchNeighborhood(100, query);
