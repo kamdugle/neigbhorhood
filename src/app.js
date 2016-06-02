@@ -7,6 +7,7 @@ RegExp.escape = function(s) {
 //Import saved Data and initiate map
 var savedData;
 var map;
+var isGoogleMapsLoaded = false;
 
 //Loads saved JSON after google map loads
 reqListener = function () {
@@ -22,6 +23,7 @@ reqListener = function () {
 //Initiates google map
 function initMap () {
 	google.maps.event.addDomListener(window, "load", function() {
+		isGoogleMapsLoaded = true;
 		map = new google.maps.Map(document.getElementById('map'), {
 		 		  center: {lat: -34.397, lng: 150.644},
 		 		  zoom: 13,
@@ -36,6 +38,14 @@ function initMap () {
 	});
   } 
 
+  //Produces alert if google maps doesn't load in 10 seconds
+  var timeout = window.setTimeout(function() {
+  		if (!isGoogleMapsLoaded) {
+  			alert("Google maps has failed to load. Please check your connection and reload page to allow functionality.");
+  		}
+  	}, 10000);
+
+//Geocodes an address, and then passes it to a callback function;
 function geocodeAddress (address, callback) {
 	var geocoder = new google.maps.Geocoder();
 	geocoder.geocode({"address": address}, function(results, status) {
