@@ -4,6 +4,7 @@ RegExp.escape = function(s) {
 		return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	};
 
+
 //Sets up Ajax Error Handling
 /*$( document ).ajaxError(
 	function(event, request, settings ) {
@@ -37,12 +38,28 @@ function initMap () {
 		 		  zoomControl: true,
 		 		  scaleControl: true
 		 		});
+
 		var oReq = new XMLHttpRequest();
 		oReq.addEventListener("load", reqListener);
 		oReq.open("GET", "savedData.json");
 		oReq.send();
 	});
   } 
+
+function geocodeAddress (address, callback) {
+	var geocoder = new google.maps.Geocoder();
+	geocoder.geocode({"address": address}, function(results, status) {
+  	if (status == google.maps.GeocoderStatus.OK) {
+  		var latlng = {};
+  		latlng["lat"] = results[0].geometry.location.lat();
+  		latlng["lng"] = results[0].geometry.location.lng();
+  		callback(latlng);
+  	}  else {
+  		alert("Geocode was not successful for the following reason: " + status);
+  	}
+  });
+}
+
 
 //Sets up ViewModel constructor
 var ViewModel = function(savedData) {
@@ -58,7 +75,7 @@ var ViewModel = function(savedData) {
 	self.city = ko.observable(savedData.city);
 	self.state = ko.observable(savedData.state);
 	self.currentNeighborhood = ko.observable(savedData.currentNeighborhood);
-	self.currentLatLng = ko.observable(savedData.currentLatLng);
+	
 
 	self.placeQuery = ko.observable();
 	self.placeResults = ko.observableArray();
@@ -88,6 +105,11 @@ var ViewModel = function(savedData) {
 
 	//Object to keep track of google marks, and generate ids
 	self.markers = {};
+
+	self.currentLatLng = {
+		"lat": savedData.currentLatLng.lat,
+		"lng": savedData.currentLatLng.lng
+	}
 
 	//Subscription Methods
 
@@ -209,7 +231,7 @@ var ViewModel = function(savedData) {
 		var processResults = function(data) {
 
 			var results = data.response.groups[0].items;
-			
+
 			var iterLength = results.length;
 
 			for (var i=0; i < iterLength; i++) {
@@ -230,10 +252,9 @@ var ViewModel = function(savedData) {
 							"success": function(data) {
 								possiblePlace["tips"] = data.response.tips.items.slice(0,3);
 							}
-							}
-						};
+							};
 						$.get(tipRequest);
-					}
+					};
 				}
 
 				//creates tipAjaxRequest with closure for the current iterated place 
@@ -241,18 +262,19 @@ var ViewModel = function(savedData) {
 
 				//calls tipAjaxRequest already created with closure
 				tipAjaxRequest();
+			}
 
-			};
+		};
 
 		//Logic for main FourSquare Request to get a list of places based on neighborhood
-		var address = self.currentNeighborhood();
+		var latlng = self.currentLatLng.lat + ", " + self.currentLatLng.lng;
 
-		var client_id = "!!!EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE";
+		var client_id = "EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE";
 		var client_secret = "TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW";
 		var version = "20160518";
 		var radius = 800;
 		var limit = number;
-		var url = "https://api.foursquare.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&near="+ address + "&radius=" + radius + "&limit=" + limit;
+		var url = "https://api.foursquare.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&ll="+ latlng + "&radius=" + radius + "&limit=" + limit;
 
 		//Chooses between a query search or a TopPicks general search
 		if (query) {
@@ -280,28 +302,17 @@ var ViewModel = function(savedData) {
 
 		self.savedPlaces([]);
 		self.placeResults([]);
+
+		//Updates the map to focus on this neigbhorhood
+		geocodeAddress(address, function(latlng) {
+			self.currentLatLng = latlng;
+		});
+
+		map.setCenter(self.currentLatLng);
+
 		//Calls a search on new neighborhood
 		self.searchNeighborhood(100);
 
-		//Updates the map to focus on this neigbhorhood
-		var geocoder;
-		var coords;
-		var geocode = function () {
-		    geocoder = new google.maps.Geocoder();
-		    geocoder.geocode({"address": address}, function(results, status) {
-		    	if (status == google.maps.GeocoderStatus.OK) {
-		    		coords = results[0].geometry.location;
-		    		self.currentLatLng(coords);
-
-		    		map.setCenter(results[0].geometry.location);
-
-		    	}  else {
-		    		alert("Geocode was not successful for the following reason: " + status);
-		    	}
-		    });
-		};
-
-		geocode();
 	};
 
 	self.removePlaces = function() {
