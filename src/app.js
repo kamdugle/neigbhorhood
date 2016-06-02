@@ -4,16 +4,6 @@ RegExp.escape = function(s) {
 		return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	};
 
-
-//Sets up Ajax Error Handling
-/*$( document ).ajaxError(
-	function(event, request, settings ) {
-		for (let i of settings) {
-			alert (i);
-		}
-	});
-*/
-
 //Import saved Data and initiate map
 var savedData;
 var map;
@@ -103,13 +93,15 @@ var ViewModel = function(savedData) {
 	});
 
 
-	//Object to keep track of google marks, and generate ids
+	//Object to keep track of google marks, current map position
 	self.markers = {};
 
 	self.currentLatLng = {
 		"lat": savedData.currentLatLng.lat,
 		"lng": savedData.currentLatLng.lng
 	}
+
+
 
 	//Subscription Methods
 
@@ -276,13 +268,14 @@ var ViewModel = function(savedData) {
 		var limit = number;
 		var url = "https://api.foursquare.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&ll="+ latlng + "&radius=" + radius + "&limit=" + limit;
 
-		//Chooses between a query search or a TopPicks general search
+		//Chooses between a query search or a TopPicks general search (if no query parameter passed)
 		if (query) {
 			url = url + "&query=" + query;
 		} else {
 			url = url + "&section=topPicks";
 		}
 		
+		//Ajax request to FourSquare for list of places
 		var request = {
 			"url": url,
 			"dataType": "json",
@@ -294,27 +287,27 @@ var ViewModel = function(savedData) {
 		$.ajax(request);
 	};
 
+	//Method that changes the current neighborhood when Update button is pressed
 	self.changeNeighborhood = function() {
 
 		//Saves the neighborhood name to currentNeighborhood Observable
 		var address = self.neighborhood() + ", " + self.city() + ", " + self.state();
 		self.currentNeighborhood(address);
 
+
+		//clears saved places and previous place results
 		self.savedPlaces([]);
 		self.placeResults([]);
 
-		//Updates the map to focus on this neigbhorhood
+		//Updates the map to focus on this neighborhood, then calls a search on it
 		geocodeAddress(address, function(latlng) {
 			self.currentLatLng = latlng;
+			map.setCenter(self.currentLatLng);
+			self.searchNeighborhood(100);
 		});
-
-		map.setCenter(self.currentLatLng);
-
-		//Calls a search on new neighborhood
-		self.searchNeighborhood(100);
-
 	};
 
+	//Removes place from either Results or SavedPlaces
 	self.removePlaces = function() {
 		var arr = self.selectedSavedPlaces();
 		iterLength = arr.length;
@@ -324,9 +317,11 @@ var ViewModel = function(savedData) {
 		}
 	};
 
+	//Provides info in the DOM for the selected place
 	self.viewPlace = function(_, target, initialPlace) {
 		var place;
 
+		//Determines if this is an initialization, then determines whether we are viewing a selected Result or a selected Saved Place
 		if (initialPlace) {
 			place = initialPlace;
 		} else {
@@ -354,7 +349,6 @@ var ViewModel = function(savedData) {
 			}
 
 			self.markers["selected"] = null;
-
 		}
 
 		//add new selected marker
@@ -381,6 +375,7 @@ var ViewModel = function(savedData) {
 
 	};
 
+	//Method to call an Ajax neighborhood search with searchbox query
 	self.searchPlace = function() {
 		var query = self.placeQuery();
 		
@@ -388,6 +383,7 @@ var ViewModel = function(savedData) {
 		self.searchNeighborhood(100, query);
 	};
 
+	//moves a place from placeResults to savedPlaces
 	self.addPlaces = function() {
 		var results = self.selectedResults();
 		var iterLength = results.length;
@@ -407,6 +403,7 @@ var ViewModel = function(savedData) {
 				}
 			}
 
+			//if not already present, adds place to savedPlaces, and removes from placeResults
 			if (!found) {
 				self.savedPlaces.push(newPlace);
 				self.placeResults.remove(newPlace);
