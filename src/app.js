@@ -1,4 +1,6 @@
 
+"use strict";
+
 //Regular expression helper function to escape all special characters in a string
 RegExp.escape = function(s) {
 		return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -51,8 +53,8 @@ function geocodeAddress (address, callback) {
 	geocoder.geocode({"address": address}, function(results, status) {
   	if (status == google.maps.GeocoderStatus.OK) {
   		var latlng = {};
-  		latlng["lat"] = results[0].geometry.location.lat();
-  		latlng["lng"] = results[0].geometry.location.lng();
+  		latlng.lat = results[0].geometry.location.lat();
+  		latlng.lng = results[0].geometry.location.lng();
   		callback(latlng);
   	}  else {
   		alert("Geocode was not successful for the following reason: " + status);
