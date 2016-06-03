@@ -1,0 +1,135 @@
+@charset "UTF-8"
+
+@import url("../bower_components/normalize-css/normalize.css");
+
+
+.color-primary-0 { color: #9D9D9D }	/* Main Primary color */
+.color-primary-1 { color: #FDFDFD }
+.color-primary-2 { color: #C9C9C9 }
+.color-primary-3 { color: #717070 }
+.color-primary-4 { color: #3A3939 }
+
+html, body { 
+	height: 100%; 
+	margin: 0; 
+	padding: 0;
+	font-family: sans-serif;
+	color: #3A3939;
+	}
+
+h1{
+	margin: 0;
+}
+
+	.top {
+		width: 100%;
+		min-height: 100px;
+		background-color: #C9C9C9;
+		text-align: center;
+		vertical-align: middle;
+		line-height: 100px;
+		font-size: 2em;
+		
+		box-sizing: border-box;
+		border: .5px dashed #FDFDFD;
+	}
+
+	.main{
+		width:100%;
+		font-size:0px;
+		display: -webkit-box;
+		display: -ms-flexbox;
+		display: flex;
+		box-sizing: border-box;
+		box-sizing: inherit;
+		-ms-flex-flow: row;
+		    flex-flow: row;
+		  -webkit-flex-wrap: wrap;
+		  flex-wrap:         wrap;
+	}
+
+	.placeBox {
+		padding: 0px 10px 10px 10px;
+		background-color: #9D9D9D;
+		display: inline-block;
+		width: 50%;
+		font-size: 1rem;
+
+		box-sizing: border-box;
+		border: .5px dashed #FDFDFD;
+	}
+
+	.viewBox {
+		padding: 0px 10px 10px 10px;
+		background-color: #9D9D9D;
+		display: inline-block;
+		width: 50%;
+		font-size: 1rem;
+
+		box-sizing: border-box;
+		border: .5px dashed #FDFDFD;
+
+	}
+
+	.filterBox {
+		padding: 0px 10px 10px 10px;
+		display: inline-block;
+		background-color: #717070;
+		width: 50%;
+		font-size: 1rem;
+
+		box-sizing: border-box;
+		border: .5px dashed #FDFDFD;
+	}
+
+	.button {
+		font-size: 1rem;
+	}
+
+	#map {
+		display: inline-block;
+		width: 50%;
+		font-size: 1rem;
+
+		box-sizing: border-box;
+		border: .5px dashed #FDFDFD;
+	}
+
+@media (max-width: 1116px) {
+	.main{
+		height: 100%;
+	}
+
+	.placeBox {
+		min-height: 33.3%;
+		width: 100%;
+		-webkit-order: 0; /* Safari */
+		order:         0;
+	}
+
+	.viewBox {
+		width: 100%;
+		min-height: 33.3%;
+		-webkit-order: 3; /* Safari */
+		order:         3;
+
+	}
+
+	.filterBox {
+		width: 100%;
+		min-height: 33.3%;
+		-webkit-order: 4; /* Safari */
+		order:         4;
+	}
+
+	.button {
+		font-size: 1rem;
+	}
+
+	#map {
+		width: 100%;
+		min-height: 50%;
+		-webkit-order: 2; /* Safari */
+		order:         2;
+	}
+}

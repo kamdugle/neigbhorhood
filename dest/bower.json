@@ -1,0 +1,23 @@
+{
+  "name": "neighborhood",
+  "authors": [
+    "Kamry <kamdugle@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^2.2.3",
+    "knockout": "^3.4.0",
+    "normalize-css": "^4.1.1"
+  }
+}
