@@ -12,10 +12,10 @@ var map;
 var isGoogleMapsLoaded = false;
 
 //Loads saved JSON after google map loads
-reqListener = function () {
+var reqListener = function () {
   savedData = JSON.parse(this.responseText);
 
-  myViewModel = new ViewModel(savedData);
+  var myViewModel = new ViewModel(savedData);
   ko.applyBindings(myViewModel);
 
   myViewModel.displayedPlaces(savedData.savedPlaces);
@@ -158,7 +158,7 @@ var ViewModel = function(savedData) {
 	//Method to update displayedPlaces based on changes to savedPlaces, to be subscribed
 	self.updateDisplayedPlaces = function(changes) {
 
-		filterQuery = self.filterQuery();
+		var filterQuery = self.filterQuery();
 
 			var iterLength = changes.length;
 
@@ -240,7 +240,7 @@ var ViewModel = function(savedData) {
 
 			for (var i=0; i < iterLength; i++) {
 
-				possiblePlace = results[i].venue;
+				var possiblePlace = results[i].venue;
 
 				var length = self.savedPlaces().length;
 
