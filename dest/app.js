@@ -322,7 +322,7 @@ var ViewModel = function(savedData) {
 	//Removes place from either Results or SavedPlaces
 	self.removePlaces = function() {
 		var arr = self.selectedSavedPlaces();
-		iterLength = arr.length;
+		var iterLength = arr.length;
 
 		for (var i = 0; i < iterLength; i++) {
 			self.savedPlaces.remove(arr[i]);
