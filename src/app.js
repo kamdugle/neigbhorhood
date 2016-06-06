@@ -247,15 +247,31 @@ var ViewModel = function(savedData) {
 
 				self.placeResults.push(possiblePlace);
 
+				if (!possiblePlace.url) {
+					possiblePlace.url = null;
+				}
+
 				//generates AjaxRequest to search FourSquare tips
 				var createTipAjaxRequest = function (possiblePlace) {
 
 					return function() {
 						var tipRequest = {
-							"url": "https://api.foursquare.com/v2/venues/" + possiblePlace.id + "/tips?client_id=EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE&client_secret=TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW&v=20160518&sort=popular&limit=3" ,
+							"url": "https://api.frousquare.com/v2/venues/" + possiblePlace.id + "/tips?client_id=EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE&client_secret=TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW&v=20160518&sort=popular&limit=3" ,
 							"dataType": "json",  
 							"success": function(data) {
-								possiblePlace["tips"] = data.response.tips.items.slice(0,3);
+								var tipArr = data.response.tips.items;
+								if (tipArr && (tipArr).length > 0) {
+									possiblePlace["tips"] = tipArr.slice(0,3);
+								} else {
+									possiblePlace["tips"] = null;
+								}
+							},
+							"error": function() {
+								possiblePlace["tips"] = null;
+								if (!fourSquareFailAlerted) {
+									alert("Neighborhood Explorer could not access Four Square Tips API. Please check your connection.");
+									fourSquareFailAlerted = true;
+								}
 							}
 							};
 						$.get(tipRequest);
@@ -266,6 +282,7 @@ var ViewModel = function(savedData) {
 				var tipAjaxRequest = createTipAjaxRequest(possiblePlace);
 
 				//calls tipAjaxRequest already created with closure
+				var fourSquareFailAlerted = false;
 				tipAjaxRequest();
 			}
 
@@ -279,7 +296,7 @@ var ViewModel = function(savedData) {
 		var version = "20160518";
 		var radius = 800;
 		var limit = number;
-		var url = "https://api.four!!!square.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&ll="+ latlng + "&radius=" + radius + "&limit=" + limit;
+		var url = "https://api.foursquare.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&ll="+ latlng + "&radius=" + radius + "&limit=" + limit;
 
 		//Chooses between a query search or a TopPicks general search (if no query parameter passed)
 		if (query) {
@@ -296,11 +313,17 @@ var ViewModel = function(savedData) {
 			"error": function (error) {
 				console.log(error);
 				if (error.responseText) {
+					var errorMsg = JSON.parse(error.responseText).meta;
+					alert("Error " + error.status + ": " + error.statusText + "\n" + errorMsg.errorDetail);
+				} else {
+					if (!fourSquareFailAlerted) {
+						alert("Error: FourSquare was not responsive to data request. Please check your connection.");
+						fourSquareFailAlerted = true;
+					}
 					
 				}
-				var errorMsg = JSON.parse(error.responseText).meta;
-				alert("Error " + error.status + ": " + error.statusText + "\n" + errorMsg.errorDetail);}
-			};
+			}
+		};
 		$.ajax(request);
 	};
 
