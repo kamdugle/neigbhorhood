@@ -38,12 +38,15 @@ function initMap () {
 		oReq.send();
   } 
 
-  //Produces alert if google maps doesn't load in 10 seconds
-  var timeout = window.setTimeout(function() {
-  		if (!isGoogleMapsLoaded) {
-  			alert("Google maps has failed to load. Please check your connection and reload page to allow functionality.");
-  		}
-  	}, 10000);
+  //Produces alert if google maps fails to load
+  function mapFail (event) {
+  	var message = "";
+  	if (event) {
+  		message += event;
+  	}
+  	message += "Google maps has failed to load. Please check your connection and reload page to allow functionality.";
+  	alert(message);
+  }
 
 //Geocodes an address, and then passes it to a callback function;
 function geocodeAddress (address, callback) {
