@@ -24,7 +24,6 @@ var reqListener = function () {
 
 //Initiates google map
 function initMap () {
-	google.maps.event.addDomListener(window, "load", function() {
 		isGoogleMapsLoaded = true;
 		map = new google.maps.Map(document.getElementById('map'), {
 		 		  center: {lat: -34.397, lng: 150.644},
@@ -37,7 +36,6 @@ function initMap () {
 		oReq.addEventListener("load", reqListener);
 		oReq.open("GET", "savedData.json");
 		oReq.send();
-	});
   } 
 
   //Produces alert if google maps doesn't load in 10 seconds
@@ -278,7 +276,7 @@ var ViewModel = function(savedData) {
 		var version = "20160518";
 		var radius = 800;
 		var limit = number;
-		var url = "https://api.foursquare.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&ll="+ latlng + "&radius=" + radius + "&limit=" + limit;
+		var url = "https://api.four!!!square.com/v2/venues/explore?client_id=" + client_id + "&client_secret=" + client_secret + "&v=" + version + "&ll="+ latlng + "&radius=" + radius + "&limit=" + limit;
 
 		//Chooses between a query search or a TopPicks general search (if no query parameter passed)
 		if (query) {
@@ -293,6 +291,10 @@ var ViewModel = function(savedData) {
 			"dataType": "json",
 			"success": processResults,
 			"error": function (error) {
+				console.log(error);
+				if (error.responseText) {
+					
+				}
 				var errorMsg = JSON.parse(error.responseText).meta;
 				alert("Error " + error.status + ": " + error.statusText + "\n" + errorMsg.errorDetail);}
 			};
