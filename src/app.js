@@ -70,7 +70,14 @@ var ViewModel = function(savedData) {
 	var self = this;
 
 	//sets up observables
-	self.savedPlaces = ko.observableArray(savedData.savedPlaces);
+	self.savedPlaces = ko.observableArray();
+	if (savedData.savedPlaces) {
+		var iterLength = savedData.savedPlaces.length;
+		for (var i=0; i<iterLength;i++) {
+			self.savedPlaces.push(savedData.savedPlaces[i]);
+		}
+	}
+
 	self.displayedPlaces = ko.observableArray();
 
 	self.newItem = ko.observable();
@@ -256,7 +263,7 @@ var ViewModel = function(savedData) {
 
 					return function() {
 						var tipRequest = {
-							"url": "https://api.frousquare.com/v2/venues/" + possiblePlace.id + "/tips?client_id=EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE&client_secret=TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW&v=20160518&sort=popular&limit=3" ,
+							"url": "https://api.foursquare.com/v2/venues/" + possiblePlace.id + "/tips?client_id=EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE&client_secret=TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW&v=20160518&sort=popular&limit=3" ,
 							"dataType": "json",  
 							"success": function(data) {
 								var tipArr = data.response.tips.items;
