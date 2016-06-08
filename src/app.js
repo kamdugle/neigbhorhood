@@ -67,7 +67,7 @@ function geocodeAddress (address, callback) {
 //Sets up ViewModel constructor
 var ViewModel = function(savedData) {
 	//saves this environment as self
-	self = this;
+	var self = this;
 
 	//sets up observables
 	self.savedPlaces = ko.observableArray(savedData.savedPlaces);
