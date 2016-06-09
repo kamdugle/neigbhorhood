@@ -6,9 +6,21 @@ RegExp.escape = function(s) {
 		return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	};
 
+//address formatting helper function
+function formatAddress (address) {
+	var formattedAddress = "";
+	for (var i=0; i < address.length; i++) {
+		formattedAddress+=address[i];
+		formattedAddress+="<br>";
+	}
+	return formattedAddress;
+}
+
+
 //Import saved Data and initiate map
 var savedData;
 var map;
+var infowindow = null;
 var isGoogleMapsLoaded = false;
 
 //Loads saved JSON after google map loads
@@ -103,12 +115,7 @@ var ViewModel = function(savedData) {
 	self.formattedAddress = ko.computed(function() {
 		if (self.currentView()) {
 			var address = self.currentView().location.formattedAddress;
-			var formattedAddress = "";
-			for (var i=0; i < address.length; i++) {
-				formattedAddress+=address[i];
-				formattedAddress+="<br>";
-			}
-			return formattedAddress;
+			return formatAddress(address);
 		}
 	});
 
@@ -130,17 +137,54 @@ var ViewModel = function(savedData) {
 		var iterLength = changes.length;
 		for (var i=0; i<iterLength; i++) {
 			var alteration = changes[i];
+			var place = alteration.value;
 			if (alteration.status === "added") {
 
 				//logic for additions
 				var position = alteration.value.location;
 				var id = String(position.lat) + String(position.lng);
+
+				//add infoWindow
+				function updateInfoWindow(place) {
+					if (infowindow) {
+						infowindow.close();
+					}
+
+					var contentString = "<div><h1>";
+
+					if (place.url) {
+						contentString += "<a href=" + place.url + ">" + place.name+ "</a>";
+					} else {
+						contentString += place.name;
+					}
+
+					contentString += "</h1>" + "<h2>" + formatAddress(place.location.formattedAddress) + "</h2>";
+					
+					if (place.tips.length > 0) {
+						contentString += "<h3><q>" + place.tips[0].text + "</q></h3>";
+
+					};
+					infowindow = new google.maps.InfoWindow({
+					    content: contentString
+					  });
+				}
+
+
+				//add marker
 				var marker = new google.maps.Marker({
 					position: position,
 					map: map,
 					animation: google.maps.Animation.DROP
 				});
 				self.markers[id] = marker;
+				marker.addListener("click", function(place, map, marker) {
+					return function(e) {
+						console.log(place);
+						self.viewPlace(null, null, place);
+						updateInfoWindow(place);
+						infowindow.open(map, marker);
+					};
+				}(place, map, marker));
 				map.setCenter(position);
 
 
@@ -365,12 +409,12 @@ var ViewModel = function(savedData) {
 	};
 
 	//Provides info in the DOM for the selected place
-	self.viewPlace = function(_, target, initialPlace) {
+	self.viewPlace = function(_, target, specificPlace) {
 		var place;
 
-		//Determines if this is an initialization, then determines whether we are viewing a selected Result or a selected Saved Place
-		if (initialPlace) {
-			place = initialPlace;
+		//Determines if this is a viewModel place, or a DOM object. If a DOM object, then determines whether we are viewing a selected Result or a selected Saved Place
+		if (specificPlace) {
+			place = specificPlace;
 		} else {
 			if (target) {
 				switch (target.currentTarget.classList[0]) {
