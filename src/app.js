@@ -75,6 +75,32 @@ function geocodeAddress (address, callback) {
   });
 }
 
+//updates infoWindows
+function updateInfoWindow(place, map, marker) {
+	if (infowindow) {
+		infowindow.close();
+	}
+
+	var contentString = "<div><h1>";
+
+	if (place.url) {
+		contentString += "<a href=" + place.url + ">" + place.name+ "</a>";
+	} else {
+		contentString += place.name;
+	}
+
+	contentString += "</h1>" + "<h2>" + formatAddress(place.location.formattedAddress) + "</h2>";
+	
+	if (place.tips.length > 0) {
+		contentString += "<h3><q>" + place.tips[0].text + "</q></h3>";
+
+	};
+	infowindow = new google.maps.InfoWindow({
+	    content: contentString
+	  });
+	infowindow.open(map, marker);
+}
+
 
 //Sets up ViewModel constructor
 var ViewModel = function(savedData) {
@@ -144,32 +170,6 @@ var ViewModel = function(savedData) {
 				var position = alteration.value.location;
 				var id = String(position.lat) + String(position.lng);
 
-				//add infoWindow
-				function updateInfoWindow(place) {
-					if (infowindow) {
-						infowindow.close();
-					}
-
-					var contentString = "<div><h1>";
-
-					if (place.url) {
-						contentString += "<a href=" + place.url + ">" + place.name+ "</a>";
-					} else {
-						contentString += place.name;
-					}
-
-					contentString += "</h1>" + "<h2>" + formatAddress(place.location.formattedAddress) + "</h2>";
-					
-					if (place.tips.length > 0) {
-						contentString += "<h3><q>" + place.tips[0].text + "</q></h3>";
-
-					};
-					infowindow = new google.maps.InfoWindow({
-					    content: contentString
-					  });
-				}
-
-
 				//add marker
 				var marker = new google.maps.Marker({
 					position: position,
@@ -181,12 +181,10 @@ var ViewModel = function(savedData) {
 					return function(e) {
 						console.log(place);
 						self.viewPlace(null, null, place);
-						updateInfoWindow(place);
-						infowindow.open(map, marker);
+						updateInfoWindow(place, map, marker);
 					};
 				}(place, map, marker));
 				map.setCenter(position);
-
 
 			} else {
 				//logic for deletions
@@ -463,6 +461,9 @@ var ViewModel = function(savedData) {
 			self.markers[id].setMap(null);
 		}
 
+		//update info window
+		updateInfoWindow(place, map, marker);
+
 		//update current view
 		self.currentView(place);
 
@@ -483,6 +484,7 @@ var ViewModel = function(savedData) {
 		}
 	};
 	self.selectedResults.subscribe(self.selectionChange, null, "arrayChange");
+	self.selectedSavedPlaces.subscribe(self.selectionChange, null, "arrayChange");
 
 
 
