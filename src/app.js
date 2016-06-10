@@ -207,6 +207,8 @@ var ViewModel = function(savedData) {
 	//Subscribes displayedPlaces Observable to updateMarkers method
 	self.displayedPlaces.subscribe(self.updateMarkers, null, "arrayChange");
 
+
+
 	//Method to update displayedPlaces based on changes to savedPlaces, to be subscribed
 	self.updateDisplayedPlaces = function(changes) {
 
@@ -465,6 +467,24 @@ var ViewModel = function(savedData) {
 		self.currentView(place);
 
 	};
+
+	//Monitors changes to selectedPlaces, and calls ViewPlace on changes
+	self.selectionChange = function(changes) {
+		var iterLength = changes.length;
+		for (var i=0; i<iterLength; i++) {
+			var alteration = changes[i];
+			var place = alteration.value;
+
+			if (alteration.status === "added") {
+				//logic for additions
+				console.log(place);
+				self.viewPlace(null, null, place);	
+			}
+		}
+	};
+	self.selectedResults.subscribe(self.selectionChange, null, "arrayChange");
+
+
 
 	//Method to call an Ajax neighborhood search with searchbox query
 	self.searchPlace = function() {
