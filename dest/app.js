@@ -6,9 +6,21 @@ RegExp.escape = function(s) {
 		return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	};
 
+//address formatting helper function
+function formatAddress (address) {
+	var formattedAddress = "";
+	for (var i=0; i < address.length; i++) {
+		formattedAddress+=address[i];
+		formattedAddress+="<br>";
+	}
+	return formattedAddress;
+}
+
+
 //Import saved Data and initiate map
 var savedData;
 var map;
+var infowindow = null;
 var isGoogleMapsLoaded = false;
 
 //Loads saved JSON after google map loads
@@ -24,7 +36,6 @@ var reqListener = function () {
 
 //Initiates google map
 function initMap () {
-	google.maps.event.addDomListener(window, "load", function() {
 		isGoogleMapsLoaded = true;
 		map = new google.maps.Map(document.getElementById('map'), {
 		 		  center: {lat: -34.397, lng: 150.644},
@@ -37,15 +48,17 @@ function initMap () {
 		oReq.addEventListener("load", reqListener);
 		oReq.open("GET", "savedData.json");
 		oReq.send();
-	});
   } 
 
-  //Produces alert if google maps doesn't load in 10 seconds
-  var timeout = window.setTimeout(function() {
-  		if (!isGoogleMapsLoaded) {
-  			alert("Google maps has failed to load. Please check your connection and reload page to allow functionality.");
-  		}
-  	}, 10000);
+  //Produces alert if google maps fails to load
+  function mapFail (event) {
+  	var message = "";
+  	if (event) {
+  		message += event;
+  	}
+  	message += "Google maps has failed to load. Please check your connection and reload page to allow functionality.";
+  	alert(message);
+  }
 
 //Geocodes an address, and then passes it to a callback function;
 function geocodeAddress (address, callback) {
@@ -62,14 +75,47 @@ function geocodeAddress (address, callback) {
   });
 }
 
+//updates infoWindows
+function updateInfoWindow(place, map, marker) {
+	if (infowindow) {
+		infowindow.close();
+	}
+
+	var contentString = "<div><h1>";
+
+	if (place.url) {
+		contentString += "<a href=" + place.url + ">" + place.name+ "</a>";
+	} else {
+		contentString += place.name;
+	}
+
+	contentString += "</h1>" + "<h2>" + formatAddress(place.location.formattedAddress) + "</h2>";
+	
+	if (place.tips.length > 0) {
+		contentString += "<h3><q>" + place.tips[0].text + "</q></h3>";
+
+	};
+	infowindow = new google.maps.InfoWindow({
+	    content: contentString
+	  });
+	infowindow.open(map, marker);
+}
+
 
 //Sets up ViewModel constructor
 var ViewModel = function(savedData) {
 	//saves this environment as self
-	self = this;
+	var self = this;
 
 	//sets up observables
-	self.savedPlaces = ko.observableArray(savedData.savedPlaces);
+	self.savedPlaces = ko.observableArray();
+	if (savedData.savedPlaces) {
+		var iterLength = savedData.savedPlaces.length;
+		for (var i=0; i<iterLength;i++) {
+			self.savedPlaces.push(savedData.savedPlaces[i]);
+		}
+	}
+
 	self.displayedPlaces = ko.observableArray();
 
 	self.newItem = ko.observable();
@@ -95,12 +141,7 @@ var ViewModel = function(savedData) {
 	self.formattedAddress = ko.computed(function() {
 		if (self.currentView()) {
 			var address = self.currentView().location.formattedAddress;
-			var formattedAddress = "";
-			for (var i=0; i < address.length; i++) {
-				formattedAddress+=address[i];
-				formattedAddress+="<br>";
-			}
-			return formattedAddress;
+			return formatAddress(address);
 		}
 	});
 
@@ -122,19 +163,27 @@ var ViewModel = function(savedData) {
 		var iterLength = changes.length;
 		for (var i=0; i<iterLength; i++) {
 			var alteration = changes[i];
+			var place = alteration.value;
 			if (alteration.status === "added") {
 
 				//logic for additions
 				var position = alteration.value.location;
 				var id = String(position.lat) + String(position.lng);
+
+				//add marker
 				var marker = new google.maps.Marker({
 					position: position,
 					map: map,
 					animation: google.maps.Animation.DROP
 				});
 				self.markers[id] = marker;
+				marker.addListener("click", function(place, map, marker) {
+					return function(e) {
+						self.viewPlace(null, null, place);
+						updateInfoWindow(place, map, marker);
+					};
+				}(place, map, marker));
 				map.setCenter(position);
-
 
 			} else {
 				//logic for deletions
@@ -154,6 +203,8 @@ var ViewModel = function(savedData) {
 	}
 	//Subscribes displayedPlaces Observable to updateMarkers method
 	self.displayedPlaces.subscribe(self.updateMarkers, null, "arrayChange");
+
+
 
 	//Method to update displayedPlaces based on changes to savedPlaces, to be subscribed
 	self.updateDisplayedPlaces = function(changes) {
@@ -246,6 +297,10 @@ var ViewModel = function(savedData) {
 
 				self.placeResults.push(possiblePlace);
 
+				if (!possiblePlace.url) {
+					possiblePlace.url = null;
+				}
+
 				//generates AjaxRequest to search FourSquare tips
 				var createTipAjaxRequest = function (possiblePlace) {
 
@@ -254,7 +309,19 @@ var ViewModel = function(savedData) {
 							"url": "https://api.foursquare.com/v2/venues/" + possiblePlace.id + "/tips?client_id=EA3A3XF2VX0FDZNSQDTNIK2ZDDASGYOFMLWOE05NLPX1HGNE&client_secret=TSVLB1DZHDGURRYXWQKYHMUKNT1FQ4MFAGV11T2F2PSFCOVW&v=20160518&sort=popular&limit=3" ,
 							"dataType": "json",  
 							"success": function(data) {
-								possiblePlace["tips"] = data.response.tips.items.slice(0,3);
+								var tipArr = data.response.tips.items;
+								if (tipArr && (tipArr).length > 0) {
+									possiblePlace["tips"] = tipArr.slice(0,3);
+								} else {
+									possiblePlace["tips"] = null;
+								}
+							},
+							"error": function() {
+								possiblePlace["tips"] = null;
+								if (!fourSquareFailAlerted) {
+									alert("Neighborhood Explorer could not access Four Square Tips API. Please check your connection.");
+									fourSquareFailAlerted = true;
+								}
 							}
 							};
 						$.get(tipRequest);
@@ -265,6 +332,7 @@ var ViewModel = function(savedData) {
 				var tipAjaxRequest = createTipAjaxRequest(possiblePlace);
 
 				//calls tipAjaxRequest already created with closure
+				var fourSquareFailAlerted = false;
 				tipAjaxRequest();
 			}
 
@@ -293,9 +361,18 @@ var ViewModel = function(savedData) {
 			"dataType": "json",
 			"success": processResults,
 			"error": function (error) {
-				var errorMsg = JSON.parse(error.responseText).meta;
-				alert("Error " + error.status + ": " + error.statusText + "\n" + errorMsg.errorDetail);}
-			};
+				if (error.responseText) {
+					var errorMsg = JSON.parse(error.responseText).meta;
+					alert("Error " + error.status + ": " + error.statusText + "\n" + errorMsg.errorDetail);
+				} else {
+					if (!fourSquareFailAlerted) {
+						alert("Error: FourSquare was not responsive to data request. Please check your connection.");
+						fourSquareFailAlerted = true;
+					}
+					
+				}
+			}
+		};
 		$.ajax(request);
 	};
 
@@ -330,12 +407,12 @@ var ViewModel = function(savedData) {
 	};
 
 	//Provides info in the DOM for the selected place
-	self.viewPlace = function(_, target, initialPlace) {
+	self.viewPlace = function(_, target, specificPlace) {
 		var place;
 
-		//Determines if this is an initialization, then determines whether we are viewing a selected Result or a selected Saved Place
-		if (initialPlace) {
-			place = initialPlace;
+		//Determines if this is a viewModel place, or a DOM object. If a DOM object, then determines whether we are viewing a selected Result or a selected Saved Place
+		if (specificPlace) {
+			place = specificPlace;
 		} else {
 			if (target) {
 				switch (target.currentTarget.classList[0]) {
@@ -382,10 +459,31 @@ var ViewModel = function(savedData) {
 			self.markers[id].setMap(null);
 		}
 
+		//update info window
+		updateInfoWindow(place, map, marker);
+
 		//update current view
 		self.currentView(place);
 
 	};
+
+	//Monitors changes to selectedPlaces, and calls ViewPlace on changes
+	self.selectionChange = function(changes) {
+		var iterLength = changes.length;
+		for (var i=0; i<iterLength; i++) {
+			var alteration = changes[i];
+			var place = alteration.value;
+
+			if (alteration.status === "added") {
+				//logic for additions
+				self.viewPlace(null, null, place);	
+			}
+		}
+	};
+	self.selectedResults.subscribe(self.selectionChange, null, "arrayChange");
+	self.selectedSavedPlaces.subscribe(self.selectionChange, null, "arrayChange");
+
+
 
 	//Method to call an Ajax neighborhood search with searchbox query
 	self.searchPlace = function() {
