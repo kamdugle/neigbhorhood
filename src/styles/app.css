@@ -95,14 +95,20 @@ h1{
 		border: .5px dashed #FDFDFD;
 	}
 
-@media (max-width: 1116px) {
+@media (max-width: 1116px) /*and (min-width: 601px)*/ {
+	body{
+		background-color: black;
+		max-width: 500px;
+		margin: 0 auto;
+	}
 	.main{
 		height: 100%;
+		width: 100%;
 	}
 
 	.placeBox {
-		min-height: 33.3%;
 		width: 100%;
+		min-height: 33.3%;
 		-webkit-order: 0; /* Safari */
 		order:         0;
 	}
@@ -128,8 +134,25 @@ h1{
 
 	#map {
 		width: 100%;
-		min-height: 50%;
+		min-height: 300px;
 		-webkit-order: 2; /* Safari */
 		order:         2;
+	}
+	#map h2, h3 {
+		font-size: .8em;
+	}
+}
+
+@media (max-width: 600px) {
+	body {
+		min-width: 300px;
+	}
+	.top {
+		font-size: .9em;
+		padding: 0px;
+		line-height: 3em;
+	}
+	h2, h3 {
+		font-size: .75em;
 	}
 }

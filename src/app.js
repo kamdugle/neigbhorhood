@@ -179,7 +179,6 @@ var ViewModel = function(savedData) {
 				self.markers[id] = marker;
 				marker.addListener("click", function(place, map, marker) {
 					return function(e) {
-						console.log(place);
 						self.viewPlace(null, null, place);
 						updateInfoWindow(place, map, marker);
 					};
@@ -362,7 +361,6 @@ var ViewModel = function(savedData) {
 			"dataType": "json",
 			"success": processResults,
 			"error": function (error) {
-				console.log(error);
 				if (error.responseText) {
 					var errorMsg = JSON.parse(error.responseText).meta;
 					alert("Error " + error.status + ": " + error.statusText + "\n" + errorMsg.errorDetail);
@@ -478,7 +476,6 @@ var ViewModel = function(savedData) {
 
 			if (alteration.status === "added") {
 				//logic for additions
-				console.log(place);
 				self.viewPlace(null, null, place);	
 			}
 		}
